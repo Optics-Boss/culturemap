@@ -1,0 +1,7 @@
+debug
+target
+**/assets
+**/*.rs.bk
+*.pdb
+**/mutants.out*/
+
