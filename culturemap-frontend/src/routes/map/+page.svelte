@@ -1,5 +1,27 @@
 <script>
+import DefaultHeader from "../../components/DefaultHeader.svelte";
+
+import 'leaflet/dist/leaflet.css';
+import { onMount } from 'svelte';
+
 let result = $state(null);
+let mapContainer;
+
+onMount(async () => {
+  const L = await import('leaflet');
+  const map = L.map(mapContainer).setView([52.1, 4.5], 10);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  L.marker([52.1, 4.5])
+    .addTo(map)
+    .bindPopup('Hello from Svelte + Leaflet!')
+    .openPopup();
+
+  return () => map.remove();
+});
 
 async function getData() {
   const url = "http://localhost:3000";
@@ -12,7 +34,6 @@ async function getData() {
     }
 
     result = await response.json();
-    console.log(result);
   } catch (error) {
     console.error(error.message);
   }
@@ -21,22 +42,20 @@ async function getData() {
 getData();
 </script>
 
-<h1>List</h1>
+<DefaultHeader />
+
+<h1>Map</h1>
 {#if result}
-  {#each result as item}
-    <h2>{item.name}</h2>
-    <b>Stats</b>
-    <ul>
-      <li><b>Region:</b> {item.region}</li>
-      <li><b>State:</b> {item.state}</li>
-      <li><b>Coordinates:</b> {item.coordinates}</li>
-    </ul>
-    <p>
-      {item.description}
-    </p>
-  {/each}
+  <p>Map here</p>
 {:else}
   <p>
     Loading...
   </p>
 {/if}
+<div bind:this={mapContainer} class="map"></div> 
+<style>
+.map {
+  height: 400px;
+  width: 100%;
+}
+</style>
