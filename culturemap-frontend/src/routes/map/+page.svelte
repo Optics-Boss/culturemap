@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { onMount } from 'svelte';
 
 let result = $state(null);
+let specificSite = $state(null);
 let mapContainer;
 
 onMount(async () => {
@@ -20,13 +21,20 @@ onMount(async () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  coordinates.forEach(element => {
-    if(element[0].split(',').length === 2) {
-      const [lat, lon] = element[0].split(',').map(Number);
-      L.marker([lat, lon]).addTo(map);
+  result.forEach(element => {
+    if (!element.coordinates) return;
+
+    if(element.coordinates.split(',').length === 2) {
+      const [lat, lon] = element.coordinates.split(',').map(Number);
+      const marker = L.marker([lat, lon]).addTo(map).bindPopup(`
+        <b>${element.name}</b><br>
+      `);
+
+      marker.on('click', function () {
+        specificSite = element;
+      })
     }
   });
-
 
   return () => map.remove();
 });
@@ -54,14 +62,32 @@ getData();
 
 <h1>Map</h1>
 {#if result}
-  <p>Map here</p>
+  <div bind:this={mapContainer} class="map"></div> 
 {:else}
   <p>
     Loading...
   </p>
 {/if}
-<div bind:this={mapContainer} class="map"></div> 
+
+{#if specificSite}
+  <div class="siteDetails">
+     <h1 class="siteTitle">{specificSite.name}</h1>
+     {specificSite.description}
+  </div>
+{/if}
+
 <style>
+.siteTitle {
+  margin-top: 0;
+}
+
+.siteDetails {
+  padding: 15px;
+  border: 1px solid black;
+  border-radius: 10px;
+  margin: 10px;
+}
+
 .map {
   height: 400px;
   width: 100%;
