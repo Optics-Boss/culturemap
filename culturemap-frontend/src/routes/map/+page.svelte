@@ -8,17 +8,25 @@ let result = $state(null);
 let mapContainer;
 
 onMount(async () => {
+  await getData();
+
   const L = await import('leaflet');
   const map = L.map(mapContainer).setView([52.1, 4.5], 10);
+  
+  let coordinates = result.map((site) => {return [site.coordinates]})
+
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  L.marker([52.1, 4.5])
-    .addTo(map)
-    .bindPopup('Hello from Svelte + Leaflet!')
-    .openPopup();
+  coordinates.forEach(element => {
+    if(element[0].split(',').length === 2) {
+      const [lat, lon] = element[0].split(',').map(Number);
+      L.marker([lat, lon]).addTo(map);
+    }
+  });
+
 
   return () => map.remove();
 });
